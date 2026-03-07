@@ -348,7 +348,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <img src="logo-summit.jpg" alt="Logo Summit" class="logo-img">
+      <img src="logo-cúpula.jpg" alt="Logo Summit" class="logo-img">
       <div class="header-text">
         <div class="header-title">Formulário de Ocorrências</div>
         <div class="header-sub">Dashboard Summit • Tris • Bazze</div>
@@ -383,6 +383,10 @@
 
         <select id="ufFiltro">
           <option value="">Todos UF</option>
+        </select>
+
+        <select id="repFiltro">
+          <option value="">Todos REP</option>
         </select>
 
         <button class="btn-primary" id="btnAplicar">Aplicar Filtros</button>
@@ -617,17 +621,28 @@
       });
     }
 
-    function preencherUfFiltro(dados) {
-      const select = document.getElementById("ufFiltro");
-      select.innerHTML = `<option value="">Todos UF</option>`;
+    function preencherFiltros(dados) {
+      const selectUF = document.getElementById("ufFiltro");
+      const selectREP = document.getElementById("repFiltro");
+
+      selectUF.innerHTML = `<option value="">Todos UF</option>`;
+      selectREP.innerHTML = `<option value="">Todos REP</option>`;
 
       const ufs = [...new Set(dados.map(d => normalizarTexto(d["UF"])).filter(Boolean))].sort();
+      const reps = [...new Set(dados.map(d => normalizarTexto(d["REP"])).filter(Boolean))].sort();
 
       ufs.forEach(uf => {
         const opt = document.createElement("option");
         opt.value = uf;
         opt.textContent = uf;
-        select.appendChild(opt);
+        selectUF.appendChild(opt);
+      });
+
+      reps.forEach(rep => {
+        const opt = document.createElement("option");
+        opt.value = rep;
+        opt.textContent = rep;
+        selectREP.appendChild(opt);
       });
     }
 
@@ -755,6 +770,7 @@
       const dataFim = document.getElementById("dataFim").value;
       const mes = document.getElementById("mesFiltro").value;
       const uf = document.getElementById("ufFiltro").value;
+      const rep = document.getElementById("repFiltro").value;
 
       if (dataInicio) {
         const dtIni = new Date(dataInicio + "T00:00:00");
@@ -784,6 +800,10 @@
         dados = dados.filter(d => normalizarTexto(d["UF"]) === uf);
       }
 
+      if (rep) {
+        dados = dados.filter(d => normalizarTexto(d["REP"]) === rep);
+      }
+
       return dados;
     }
 
@@ -797,6 +817,7 @@
       document.getElementById("dataFim").value = "";
       document.getElementById("mesFiltro").value = "";
       document.getElementById("ufFiltro").value = "";
+      document.getElementById("repFiltro").value = "";
       atualizarDashboardCompleto(dadosOriginais);
     }
 
@@ -848,7 +869,7 @@
         }
 
         dadosOriginais = dados;
-        preencherUfFiltro(dadosOriginais);
+        preencherFiltros(dadosOriginais);
         atualizarDashboardCompleto(dadosOriginais);
       } catch (erro) {
         mostrarErro("Erro ao carregar o CSV: " + erro.message);
