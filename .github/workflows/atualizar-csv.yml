@@ -1,0 +1,58 @@
+name: Atualizar CSV do dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install pandas openpyxl requests
+
+      - name: Baixar Excel do OneDrive
+        env:
+          ONEDRIVE_XLSX_URL: ${{ secrets.ONEDRIVE_XLSX_URL }}
+        run: |
+          python - <<'PY'
+          import os, requests
+          url = os.environ["ONEDRIVE_XLSX_URL"]
+          r = requests.get(url, allow_redirects=True, timeout=60)
+          r.raise_for_status()
+          with open("base.xlsx", "wb") as f:
+              f.write(r.content)
+          print("Arquivo baixado")
+          PY
+
+      - name: Gerar CSV
+        run: |
+          python - <<'PY'
+          import pandas as pd
+
+          df = pd.read_excel("base.xlsx", sheet_name="Base")
+          df = df.dropna(how="all")
+          df.to_csv("Base-Ocorrências.csv", index=False, sep=";", encoding="utf-8-sig")
+          print("CSV atualizado")
+          PY
+
+      - name: Commitar mudanças
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add Base-Ocorrências.csv
+          git diff --cached --quiet || git commit -m "Atualiza Base-Ocorrências.csv automaticamente"
+          git push
