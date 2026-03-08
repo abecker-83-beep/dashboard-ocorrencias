@@ -24,26 +24,35 @@ jobs:
       - name: Instalar dependencias
         run: pip install pandas openpyxl requests
 
-      - name: Baixar Excel do OneDrive
+       - name: Baixar Excel do OneDrive
         env:
           ONEDRIVE_XLSX_URL: ${{ secrets.ONEDRIVE_XLSX_URL }}
         run: |
           python - <<'PY'
           import os, requests
+
           url = os.environ["ONEDRIVE_XLSX_URL"]
           r = requests.get(url, allow_redirects=True, timeout=60)
           r.raise_for_status()
+
+          content_type = r.headers.get("Content-Type", "")
+          print("Content-Type:", content_type)
+
           with open("base.xlsx", "wb") as f:
               f.write(r.content)
-          print("Arquivo baixado")
+
+          print("Arquivo baixado:", len(r.content), "bytes")
+
+          if b"<html" in r.content[:500].lower():
+              raise Exception("O link do OneDrive retornou HTML em vez de um arquivo Excel. Ajuste o link compartilhado.")
           PY
 
-      - name: Gerar CSV
+           - name: Gerar CSV
         run: |
           python - <<'PY'
           import pandas as pd
 
-          df = pd.read_excel("base.xlsx", sheet_name="Base")
+          df = pd.read_excel("base.xlsx", sheet_name="Base", engine="openpyxl")
           df = df.dropna(how="all")
           df.to_csv("Base-Ocorrências.csv", index=False, sep=";", encoding="utf-8-sig")
           print("CSV atualizado")
