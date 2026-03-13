@@ -3,7 +3,7 @@ name: Atualizar CSV do dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 10 * * *"
+  - cron: "0 * * * *"
 
 permissions:
   contents: write
