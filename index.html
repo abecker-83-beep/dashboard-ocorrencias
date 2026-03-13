@@ -560,13 +560,40 @@
         mapa[normalizarCabecalho(campo)] = campo;
       });
 
-      COLUNAS.data = mapa["DATA"] || mapa["DADOS"] || mapa["DT"] || mapa["DATA OCORRENCIA"] || null;
-      COLUNAS.uf = mapa["UF"] || mapa["ESTADO"] || null;
-      COLUNAS.rep = mapa["REP"] || mapa["REPRESENTANTE"] || null;
-      COLUNAS.cliente = mapa["CLIENTE"] || mapa["RAZAO SOCIAL"] || null;
-      COLUNAS.produto = mapa["PRODUTO"] || mapa["DESCRICAO"] || null;
-      COLUNAS.tratativa = mapa["TRATATIVA"] || mapa["TRATATIVAS"] || null;
-      COLUNAS.qtd = mapa["QTD"] || mapa["QUANTIDADE"] || null;
+     COLUNAS.data =
+  mapa["DADOS"] ||
+  mapa["DATA"] ||
+  mapa["DT"] ||
+  null;
+
+COLUNAS.uf =
+  mapa["UF"] ||
+  mapa["ESTADO"] ||
+  null;
+
+COLUNAS.rep =
+  mapa["REP"] ||
+  mapa["REPRESENTANTE"] ||
+  null;
+
+COLUNAS.cliente =
+  mapa["CLIENTE"] ||
+  mapa["RAZAO SOCIAL"] ||
+  null;
+
+COLUNAS.produto =
+  mapa["PRODUTO"] ||
+  mapa["DESCRICAO"] ||
+  null;
+
+COLUNAS.tratativa =
+  mapa["TRATATIVA"] ||
+  null;
+
+COLUNAS.qtd =
+  mapa["QTD"] ||
+  mapa["QUANTIDADE"] ||
+  null;
     }
 
     function campo(linha, nomeCampo) {
