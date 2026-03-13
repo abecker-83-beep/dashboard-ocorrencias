@@ -3,21 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Formulário de Ocorrências</title>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <title>Dashboard de Ocorrências</title>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1d4ed8;
+      --primary-2: #2563eb;
+      --border: #e5e7eb;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .container {
-      max-width: 1800px;
+      max-width: 1440px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -25,474 +44,458 @@
     .header {
       display: flex;
       align-items: center;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .logo-box {
-      width: 120px;
-      height: 72px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .logo-img {
-      max-width: 112px;
-      max-height: 64px;
-      object-fit: contain;
-      display: block;
-    }
-
-    .header-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header-title {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .header-sub {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
-
-    .toolbar {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 18px;
-      padding-top: 10px;
-      border-top: 1px solid #d9dee5;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-    }
-
-    .tab-btn {
-      border: none;
-      background: #6b7280;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
       color: #fff;
-      padding: 9px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .tab-btn.active {
-      background: #2563eb;
-    }
-
-    .filters {
-      display: flex;
+      border-radius: 24px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 10px;
+    }
+
+    .header-left {
+      display: flex;
       align-items: center;
+      gap: 16px;
+      min-width: 0;
     }
 
-    .filters input,
-    .filters select {
-      height: 38px;
-      padding: 0 10px;
-      border: 1px solid #cfd6dd;
-      border-radius: 6px;
+    .logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
       background: #fff;
+      border-radius: 16px;
+      padding: 8px;
+      display: none;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .title-wrap p {
+      margin: 6px 0 0;
+      opacity: 0.92;
       font-size: 14px;
     }
 
-    .btn-primary,
-    .btn-secondary {
-      border: none;
-      height: 38px;
-      padding: 0 14px;
-      border-radius: 6px;
+    .header-right {
+      text-align: right;
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: bold;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      height: 42px;
+      padding: 0 16px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
+      font-weight: bold;
     }
 
     .btn-primary {
-      background: #2563eb;
+      background: var(--primary);
       color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-2);
     }
 
     .btn-secondary {
-      background: #6b7280;
-      color: #fff;
+      background: #eef2ff;
+      color: var(--primary);
     }
 
-    .erro {
-      display: none;
-      background: #fff1f2;
+    .btn-secondary:hover {
+      background: #dbeafe;
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+      white-space: pre-wrap;
+    }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
       color: #991b1b;
-      border: 1px solid #fecdd3;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      white-space: pre-line;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-top: 12px;
+      display: none;
+      white-space: pre-wrap;
     }
 
-    .top-grid {
+    .metrics-grid {
       display: grid;
-      grid-template-columns: 0.9fr 1.2fr 1.15fr 1fr 0.95fr;
-      gap: 14px;
-      margin-bottom: 16px;
-      align-items: stretch;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      padding: 16px;
-      min-height: 365px;
-    }
-
-    .card h2 {
-      margin: 0 0 14px 0;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .metric-block {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 11px 0;
-      border-bottom: 1px solid #eceff3;
-      font-size: 15px;
-      gap: 10px;
-    }
-
-    .metric-block:last-child {
-      border-bottom: none;
-    }
-
-    .metric-block strong {
-      color: #2563eb;
-    }
-
-    .section-title {
-      margin: 16px 0 8px 0;
-      font-size: 15px;
-      font-weight: 700;
-      color: #6b7280;
-      text-align: center;
-    }
-
-    .list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      grid-template-columns: repeat(7, minmax(140px, 1fr));
       gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #eceff3;
-      font-size: 15px;
     }
 
-    .list-item:last-child {
-      border-bottom: none;
+    .metric-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 102px;
     }
 
-    .list-item span:first-child {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .metric-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 0.4px;
     }
 
-    .badge {
-      min-width: 46px;
-      text-align: center;
-      background: #e8f1ff;
-      color: #2563eb;
-      border: 1px solid #bfdbfe;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      white-space: nowrap;
+    .metric-card .value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .metric-card.green .value { color: var(--ok); }
+    .metric-card.orange .value { color: var(--warn); }
+    .metric-card.red .value { color: var(--danger); }
+    .metric-card.blue .value { color: var(--primary); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
     }
 
     .chart-box {
-      position: relative;
-      height: 270px;
-    }
-
-    .middle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 10px;
-    }
-
-    .chart-card {
       background: #fff;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      padding: 18px;
-      min-height: 360px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      min-height: 390px;
     }
 
-    .chart-card h2 {
-      margin: 0 0 14px 0;
-      font-size: 18px;
-      text-align: center;
+    .chart-box h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
     }
 
-    .chart-box-large {
+    .canvas-wrap {
       position: relative;
-      height: 260px;
+      height: 300px;
     }
 
-    .hidden {
-      display: none !important;
-    }
-
-    .ranking-grid {
+    .tables-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-      margin-top: 10px;
+      gap: 20px;
+      margin-bottom: 20px;
     }
 
-    .ranking-card {
-      background: #fff;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      padding: 16px;
-      min-height: 700px;
-    }
-
-    .ranking-card h2 {
-      margin: 0 0 14px 0;
-      text-align: center;
-      font-size: 20px;
-    }
-
-    .ranking-item {
-      display: grid;
-      grid-template-columns: 34px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid #eceff3;
-      font-size: 14px;
-    }
-
-    .ranking-item:last-child {
-      border-bottom: none;
-    }
-
-    .ranking-pos {
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #eff6ff;
-      color: #2563eb;
-      border-radius: 50%;
-      font-weight: 700;
+    table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 13px;
     }
 
-    .ranking-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
     }
 
-    .ranking-value {
-      background: #e8f1ff;
-      color: #2563eb;
-      border: 1px solid #bfdbfe;
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-weight: 700;
-      white-space: nowrap;
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
 
-    @media (max-width: 1500px) {
-      .top-grid {
-        grid-template-columns: 1fr 1fr;
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 12px 0;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 1200px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
       }
-
-      .ranking-grid {
+      .tables-grid {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 900px) {
-      .top-grid,
-      .middle-grid,
-      .ranking-grid {
+      .filters-grid,
+      .grid-2 {
         grid-template-columns: 1fr;
       }
-
-      .filters {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
       .header {
-        flex-direction: column;
         align-items: flex-start;
+      }
+      .header-right {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .title-wrap h1 {
+        font-size: 22px;
+      }
+      .logo {
+        width: 56px;
+        height: 56px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <div class="logo-box">
-        <img id="logoImg" src="./logo.jpg" alt="Logo Summit" class="logo-img">
-      </div>
-      <div class="header-text">
-        <div class="header-title">Formulário de Ocorrências</div>
-        <div class="header-sub">Dashboard Summit • Tris • Bazze</div>
-      </div>
-    </div>
-
-    <div class="toolbar">
-      <div class="tabs">
-        <button class="tab-btn active" id="tabDashboard">Dashboard</button>
-        <button class="tab-btn" id="tabRanking">Ranking</button>
-      </div>
-
-      <div class="filters">
-        <input type="date" id="dataInicio">
-        <input type="date" id="dataFim">
-
-       <select id="mesFiltro">
-  <option value="">Todos Meses</option>
-  <option value="01">Janeiro</option>
-  <option value="02">Fevereiro</option>
-  <option value="03">Março</option>
-  <option value="04">Abril</option>
-  <option value="05">Maio</option>
-  <option value="06">Junho</option>
-  <option value="07">Julho</option>
-  <option value="08">Agosto</option>
-  <option value="09">Setembro</option>
-  <option value="10">Outubro</option>
-  <option value="11">Novembro</option>
-  <option value="12">Dezembro</option>
-</select>
-
-<select id="anoFiltro">
-  <option value="">Todos Anos</option>
-</select>
-
-        <select id="ufFiltro">
-          <option value="">Todos UF</option>
-        </select>
-
-        <select id="repFiltro">
-          <option value="">Todos REP</option>
-        </select>
-
-        <button class="btn-primary" id="btnAplicar">Aplicar Filtros</button>
-        <button class="btn-secondary" id="btnLimpar">Limpar Filtros</button>
-      </div>
-    </div>
-
-    <div id="erro" class="erro"></div>
-
-    <div id="viewDashboard">
-      <div class="top-grid">
-        <div class="card">
-          <h2>Métricas Gerais</h2>
-
-          <div class="metric-block"><span>Ocorrências:</span><strong id="ocorrencias">0</strong></div>
-          <div class="metric-block"><span>Clientes Únicos:</span><strong id="clientes">0</strong></div>
-          <div class="metric-block"><span>Produtos Únicos:</span><strong id="produtos">0</strong></div>
-
-          <div class="section-title">TRATATIVAS</div>
-
-          <div class="metric-block"><span>Abatimento:</span><strong id="tratAbatimento">0</strong></div>
-          <div class="metric-block"><span>Bonificação:</span><strong id="tratBonificacao">0</strong></div>
-          <div class="metric-block"><span>Devolução:</span><strong id="tratDevolucao">0</strong></div>
-          <div class="metric-block"><span>Sem Retorno:</span><strong id="tratSemRetorno">0</strong></div>
-        </div>
-
-        <div class="card">
-          <h2>Top 5 Produtos</h2>
-          <div id="topProdutos"></div>
-        </div>
-
-        <div class="card">
-          <h2>Top 5 Regiões (UF)</h2>
-          <div class="chart-box">
-            <canvas id="graficoUF"></canvas>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Top 5 Clientes</h2>
-          <div id="topClientes"></div>
-        </div>
-
-        <div class="card">
-          <h2>Top 5 REPs</h2>
-          <div id="topReps"></div>
+    <header class="header">
+      <div class="header-left">
+        <img id="logoImg" class="logo" src="./logo.jpg" alt="Logo" />
+        <div class="title-wrap">
+          <h1>Dashboard de Ocorrências</h1>
+          <p>Métricas, rankings e gráficos carregados automaticamente do CSV</p>
         </div>
       </div>
 
-      <div class="middle-grid">
-        <div class="chart-card">
-          <h2>Distribuição de Tratativas</h2>
-          <div class="chart-box-large">
-            <canvas id="graficoTratativas"></canvas>
-          </div>
+      <div class="header-right">
+        <div><strong>Fonte:</strong> arquivo CSV do repositório</div>
+        <div id="csvFonte">Aguardando carregamento...</div>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Filtros</h2>
+
+      <div class="filters-grid">
+        <div class="field">
+          <label for="dataInicio">Data inicial</label>
+          <input type="date" id="dataInicio" />
         </div>
 
-        <div class="chart-card">
-          <h2>Tendência Temporal (Mensal)</h2>
-          <div class="chart-box-large">
-            <canvas id="graficoMensal"></canvas>
-          </div>
+        <div class="field">
+          <label for="dataFim">Data final</label>
+          <input type="date" id="dataFim" />
+        </div>
+
+        <div class="field">
+          <label for="mesFiltro">Mês</label>
+          <select id="mesFiltro">
+            <option value="">Todos</option>
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="anoFiltro">Ano</label>
+          <select id="anoFiltro">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ufFiltro">UF</label>
+          <select id="ufFiltro">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="repFiltro">REP</label>
+          <select id="repFiltro">
+            <option value="">Todos</option>
+          </select>
         </div>
       </div>
-    </div>
 
-    <div id="viewRanking" class="hidden">
-      <div class="ranking-grid">
-        <div class="ranking-card">
-          <h2>Top 20 Produtos</h2>
-          <div id="rankingProdutos"></div>
+      <div class="actions">
+        <button class="btn-primary" onclick="aplicarFiltros()">Aplicar filtros</button>
+        <button class="btn-secondary" onclick="limparFiltros()">Limpar filtros</button>
+        <button class="btn-secondary" onclick="carregarCSV()">Recarregar CSV</button>
+      </div>
+
+      <div id="status" class="status"></div>
+      <div id="erro" class="error"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Métricas Gerais</h2>
+      <div class="metrics-grid">
+        <div class="metric-card blue">
+          <div class="label">Ocorrências</div>
+          <div class="value" id="mOcorrencias">0</div>
         </div>
-
-        <div class="ranking-card">
-          <h2>Top 20 Clientes</h2>
-          <div id="rankingClientes"></div>
+        <div class="metric-card blue">
+          <div class="label">Clientes Únicos</div>
+          <div class="value" id="mClientes">0</div>
         </div>
-
-        <div class="ranking-card">
-          <h2>Top 20 REPs</h2>
-          <div id="rankingReps"></div>
+        <div class="metric-card blue">
+          <div class="label">Produtos Únicos</div>
+          <div class="value" id="mProdutos">0</div>
+        </div>
+        <div class="metric-card orange">
+          <div class="label">Abatimento</div>
+          <div class="value" id="mAbatimento">0</div>
+        </div>
+        <div class="metric-card green">
+          <div class="label">Bonificação</div>
+          <div class="value" id="mBonificacao">0</div>
+        </div>
+        <div class="metric-card red">
+          <div class="label">Devolução</div>
+          <div class="value" id="mDevolucao">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Sem Retorno</div>
+          <div class="value" id="mSemRetorno">0</div>
         </div>
       </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="chart-box">
+        <h3>Top 5 Produtos</h3>
+        <div class="canvas-wrap"><canvas id="chartProdutos"></canvas></div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Top 5 Regiões (UF)</h3>
+        <div class="canvas-wrap"><canvas id="chartUF"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="chart-box">
+        <h3>Distribuição de Tratativas</h3>
+        <div class="canvas-wrap"><canvas id="chartTratativas"></canvas></div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Tendência Temporal (Mensal)</h3>
+        <div class="canvas-wrap"><canvas id="chartMensal"></canvas></div>
+      </div>
+    </section>
+
+    <section class="tables-grid">
+      <div class="panel">
+        <h3 class="section-title">Top 20 Produtos</h3>
+        <div id="tabelaProdutos"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="section-title">Top 20 Clientes</h3>
+        <div id="tabelaClientes"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="section-title">Top 20 REPs</h3>
+        <div id="tabelaReps"></div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Dashboard gerado no navegador com HTML + JavaScript + PapaParse + Chart.js
     </div>
   </div>
 
   <script>
-    const arquivoCSV = "Base-Ocorrências.csv";
+    const CANDIDATOS_CSV = [
+      "./Base-Ocorrencias.csv",
+      "./Base-Ocorrências.csv",
+      "./base-ocorrencias.csv",
+      "./base-ocorrências.csv"
+    ];
 
     const COLUNAS = {
       data: null,
@@ -505,537 +508,549 @@
     };
 
     let dadosOriginais = [];
-    let graficoUF = null;
-    let graficoTratativas = null;
-    let graficoMensal = null;
+    let graficos = {};
 
-    function mostrarErro(msg) {
-      const box = document.getElementById("erro");
-      box.style.display = "block";
-      box.textContent = msg;
-    }
-
-    function limparErro() {
-      const box = document.getElementById("erro");
-      box.style.display = "none";
-      box.textContent = "";
-    }
-
-    function formatarNumero(valor) {
-      return Number(valor || 0).toLocaleString("pt-BR");
-    }
-
-    function normalizarTexto(v) {
-      return (v || "").toString().trim();
-    }
-
-    function normalizarCabecalho(v) {
-      return normalizarTexto(v)
-        .replace(/\uFEFF/g, "")
+    function normalizarTexto(valor) {
+      return String(valor ?? "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\uFEFF/g, "")
+        .trim()
         .toUpperCase();
     }
 
+    function textoOriginal(valor) {
+      return String(valor ?? "").replace(/\uFEFF/g, "").trim();
+    }
+
+    function numeroSeguro(valor) {
+      if (valor === null || valor === undefined || valor === "") return 0;
+      const limpo = String(valor).replace(/\./g, "").replace(",", ".");
+      const n = Number(limpo);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function formatarNumero(valor) {
+      return new Intl.NumberFormat("pt-BR").format(valor || 0);
+    }
+
+    function formatarMesAno(date) {
+      const meses = [
+        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+      ];
+      return `${meses[date.getMonth()]}/${date.getFullYear()}`;
+    }
+
+    function parseData(valor) {
+      const s = String(valor ?? "").trim();
+      if (!s) return null;
+
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        const d = new Date(s + "T00:00:00");
+        return isNaN(d) ? null : d;
+      }
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [dia, mes, ano] = s.split("/");
+        const d = new Date(`${ano}-${mes}-${dia}T00:00:00`);
+        return isNaN(d) ? null : d;
+      }
+
+      const d = new Date(s);
+      return isNaN(d) ? null : d;
+    }
+
+    function mostrarStatus(msg) {
+      document.getElementById("status").textContent = msg || "";
+    }
+
+    function mostrarErro(msg) {
+      const el = document.getElementById("erro");
+      el.style.display = "block";
+      el.textContent = msg || "Erro desconhecido.";
+    }
+
+    function limparErro() {
+      const el = document.getElementById("erro");
+      el.style.display = "none";
+      el.textContent = "";
+    }
+
     function configurarLogo() {
-      const img = document.getElementById("logoImg");
-      const tentativas = ["./logo.jpg", "./logo.png", "./logo-summit.jpg", "./logo-summit.png"];
-      let i = 0;
+      const logo = document.getElementById("logoImg");
+      logo.addEventListener("load", () => {
+        logo.style.display = "block";
+      });
+      logo.addEventListener("error", () => {
+        logo.style.display = "none";
+      });
+    }
 
-      img.onerror = function () {
-        i++;
-        if (i < tentativas.length) {
-          img.src = tentativas[i];
-        } else {
-          img.style.display = "none";
+    function detectarColunas(headers) {
+      const mapa = {};
+      headers.forEach(h => {
+        mapa[normalizarTexto(h)] = h;
+      });
+
+      function encontrar(opcoes) {
+        for (const nome of opcoes) {
+          const achou = mapa[normalizarTexto(nome)];
+          if (achou) return achou;
         }
-      };
-
-      img.src = tentativas[0];
-    }
-
-    function detectarColunas(headerFields) {
-      const mapa = {};
-      headerFields.forEach(campo => {
-        mapa[normalizarCabecalho(campo)] = campo;
-      });
-
-     COLUNAS.data =
-  mapa["DADOS"] ||
-  mapa["DATA"] ||
-  mapa["DT"] ||
-  null;
-
-COLUNAS.uf =
-  mapa["UF"] ||
-  mapa["ESTADO"] ||
-  null;
-
-COLUNAS.rep =
-  mapa["REP"] ||
-  mapa["REPRESENTANTE"] ||
-  null;
-
-COLUNAS.cliente =
-  mapa["CLIENTE"] ||
-  mapa["RAZAO SOCIAL"] ||
-  null;
-
-COLUNAS.produto =
-  mapa["PRODUTO"] ||
-  mapa["DESCRICAO"] ||
-  null;
-
-COLUNAS.tratativa =
-  mapa["TRATATIVA"] ||
-  null;
-
-COLUNAS.qtd =
-  mapa["QTD"] ||
-  mapa["QUANTIDADE"] ||
-  null;
-    }
-
-    function campo(linha, nomeCampo) {
-      const real = COLUNAS[nomeCampo];
-      return real ? linha[real] : "";
-    }
-
-    function normalizarTratativa(v) {
-      const txt = normalizarTexto(v).toUpperCase();
-      if (txt.includes("ABAT")) return "ABATIMENTO";
-      if (txt.includes("BON")) return "BONIFICAÇÃO";
-      if (txt.includes("DEV")) return "DEVOLUÇÃO";
-      if (txt.includes("SEM")) return "SEM RETORNO";
-      return txt || "OUTROS";
-    }
-
-    function toNumber(v) {
-      let valor = (v || "0").toString().trim();
-      if (!valor) return 0;
-
-      if (valor.includes(",") && valor.includes(".")) {
-        valor = valor.replace(/\./g, "").replace(",", ".");
-      } else if (valor.includes(",")) {
-        valor = valor.replace(",", ".");
+        return null;
       }
 
-      return parseFloat(valor) || 0;
+      COLUNAS.data = encontrar(["DATA", "DT", "DATA OCORRENCIA", "DATA_OCORRENCIA"]);
+      COLUNAS.uf = encontrar(["UF", "ESTADO"]);
+      COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO"]);
+      COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL"]);
+      COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "ITEM"]);
+      COLUNAS.tratativa = encontrar(["TRATATIVA", "TRATATIVA", "TRATATIVA FINAL", "STATUS"]);
+      COLUNAS.qtd = encontrar(["QTD", "QUANTIDADE", "QTDE"]);
+
+      return COLUNAS;
     }
 
-    function parseDataBr(dataStr) {
-      const txtOriginal = normalizarTexto(dataStr);
-      if (!txtOriginal) return null;
-
-      const txt = txtOriginal.split(" ")[0].trim();
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(txt)) {
-        const [ano, mes, dia] = txt.split("-");
-        const data = new Date(Number(ano), Number(mes) - 1, Number(dia));
-        return isNaN(data.getTime()) ? null : data;
-      }
-
-      const partes = txt.split("/");
-      if (partes.length !== 3) return null;
-
-      const dia = partes[0].padStart(2, "0");
-      const mes = partes[1].padStart(2, "0");
-      const ano = partes[2].substring(0, 4);
-
-      const data = new Date(Number(ano), Number(mes) - 1, Number(dia));
-      return isNaN(data.getTime()) ? null : data;
+    function campo(linha, chave) {
+      const coluna = COLUNAS[chave];
+      return coluna ? linha[coluna] : "";
     }
 
-    function contarValores(dados, nomeCampo) {
-      const mapa = {};
-      dados.forEach(linha => {
-        const valor = normalizarTexto(campo(linha, nomeCampo));
-        if (valor) mapa[valor] = (mapa[valor] || 0) + 1;
-      });
-      return mapa;
-    }
+    async function tentarCarregarTextoCSV() {
+      const erros = [];
 
-    function somarValores(dados, nomeCampoGrupo, nomeCampoValor) {
-      const mapa = {};
-      dados.forEach(linha => {
-        const grupo = normalizarTexto(campo(linha, nomeCampoGrupo));
-        const valor = toNumber(campo(linha, nomeCampoValor));
-        if (grupo) mapa[grupo] = (mapa[grupo] || 0) + valor;
-      });
-      return mapa;
-    }
-
-    function contarTratativas(dados) {
-      const mapa = {};
-      dados.forEach(linha => {
-        const trat = normalizarTratativa(campo(linha, "tratativa"));
-        mapa[trat] = (mapa[trat] || 0) + 1;
-      });
-      return mapa;
-    }
-
-    function contarPorMes(dados) {
-      const mapa = {};
-
-      dados.forEach(linha => {
-        const data = parseDataBr(campo(linha, "data"));
-        if (!data) return;
-
-        const mes = String(data.getMonth() + 1).padStart(2, "0");
-        const ano = String(data.getFullYear());
-        const chave = `${mes}/${ano}`;
-
-        mapa[chave] = (mapa[chave] || 0) + 1;
-      });
-
-      return Object.entries(mapa).sort((a, b) => {
-        const [mesA, anoA] = a[0].split("/");
-        const [mesB, anoB] = b[0].split("/");
-
-        const dataA = new Date(Number(anoA), Number(mesA) - 1, 1);
-        const dataB = new Date(Number(anoB), Number(mesB) - 1, 1);
-
-        return dataA - dataB;
-      });
-    }
-
-    function topN(obj, limite) {
-      return Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, limite);
-    }
-
-    function renderLista(id, lista) {
-      const el = document.getElementById(id);
-      el.innerHTML = "";
-
-      if (!lista.length) {
-        el.innerHTML = `<div class="list-item"><span>Sem dados</span><span class="badge">0</span></div>`;
-        return;
-      }
-
-      lista.forEach(([nome, valor]) => {
-        const div = document.createElement("div");
-        div.className = "list-item";
-        div.innerHTML = `
-          <span title="${nome}">${nome}</span>
-          <span class="badge">${formatarNumero(valor)}</span>
-        `;
-        el.appendChild(div);
-      });
-    }
-
-    function renderRanking(id, lista) {
-      const el = document.getElementById(id);
-      el.innerHTML = "";
-
-      if (!lista.length) {
-        el.innerHTML = `<div class="ranking-item"><div class="ranking-pos">0</div><div class="ranking-name">Sem dados</div><div class="ranking-value">0</div></div>`;
-        return;
-      }
-
-      lista.forEach(([nome, valor], index) => {
-        const div = document.createElement("div");
-        div.className = "ranking-item";
-        div.innerHTML = `
-          <div class="ranking-pos">${index + 1}</div>
-          <div class="ranking-name" title="${nome}">${nome}</div>
-          <div class="ranking-value">${formatarNumero(valor)}</div>
-        `;
-        el.appendChild(div);
-      });
-    }
-
-   function preencherFiltros(dados) {
-  const selectUF = document.getElementById("ufFiltro");
-  const selectREP = document.getElementById("repFiltro");
-  const selectAno = document.getElementById("anoFiltro");
-
-  selectUF.innerHTML = `<option value="">Todos UF</option>`;
-  selectREP.innerHTML = `<option value="">Todos REP</option>`;
-  selectAno.innerHTML = `<option value="">Todos Anos</option>`;
-
-  const ufs = [...new Set(dados.map(d => normalizarTexto(campo(d, "uf"))).filter(Boolean))].sort();
-  const reps = [...new Set(dados.map(d => normalizarTexto(campo(d, "rep"))).filter(Boolean))].sort();
-
-  const anos = [...new Set(
-    dados
-      .map(d => {
-        const dt = parseDataBr(campo(d, "data"));
-        return dt ? String(dt.getFullYear()) : "";
-      })
-      .filter(Boolean)
-  )].sort();
-
-  ufs.forEach(uf => {
-    const opt = document.createElement("option");
-    opt.value = uf;
-    opt.textContent = uf;
-    selectUF.appendChild(opt);
-  });
-
-  reps.forEach(rep => {
-    const opt = document.createElement("option");
-    opt.value = rep;
-    opt.textContent = rep;
-    selectREP.appendChild(opt);
-  });
-
-  anos.forEach(ano => {
-    const opt = document.createElement("option");
-    opt.value = ano;
-    opt.textContent = ano;
-    selectAno.appendChild(opt);
-  });
-}
-
-    function atualizarMetricas(dados) {
-      document.getElementById("ocorrencias").textContent = formatarNumero(dados.length);
-      document.getElementById("clientes").textContent = formatarNumero(
-        new Set(dados.map(x => normalizarTexto(campo(x, "cliente"))).filter(Boolean)).size
-      );
-      document.getElementById("produtos").textContent = formatarNumero(
-        new Set(dados.map(x => normalizarTexto(campo(x, "produto"))).filter(Boolean)).size
-      );
-
-      const tratativas = contarTratativas(dados);
-      document.getElementById("tratAbatimento").textContent = formatarNumero(tratativas["ABATIMENTO"] || 0);
-      document.getElementById("tratBonificacao").textContent = formatarNumero(tratativas["BONIFICAÇÃO"] || 0);
-      document.getElementById("tratDevolucao").textContent = formatarNumero(tratativas["DEVOLUÇÃO"] || 0);
-      document.getElementById("tratSemRetorno").textContent = formatarNumero(tratativas["SEM RETORNO"] || 0);
-    }
-
-    function atualizarGraficos(dados) {
-      const dadosUF = topN(contarValores(dados, "uf"), 5);
-      const ctxUF = document.getElementById("graficoUF").getContext("2d");
-
-      if (graficoUF) graficoUF.destroy();
-
-      graficoUF = new Chart(ctxUF, {
-        type: "bar",
-        data: {
-          labels: dadosUF.map(x => x[0]),
-          datasets: [{
-            label: "Ocorrências",
-            data: dadosUF.map(x => x[1]),
-            backgroundColor: "rgba(96, 165, 250, 0.75)",
-            borderColor: "rgba(59, 130, 246, 1)",
-            borderWidth: 1,
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 }
-            }
+      for (const arquivo of CANDIDATOS_CSV) {
+        try {
+          const resp = await fetch(`${arquivo}?v=${Date.now()}`, { cache: "no-store" });
+          if (!resp.ok) {
+            erros.push(`${arquivo}: HTTP ${resp.status}`);
+            continue;
           }
-        }
-      });
 
-      const trat = contarTratativas(dados);
-      const ordemTrat = ["ABATIMENTO", "DEVOLUÇÃO", "SEM RETORNO", "BONIFICAÇÃO"];
-      const ctxTrat = document.getElementById("graficoTratativas").getContext("2d");
-
-      if (graficoTratativas) graficoTratativas.destroy();
-
-      graficoTratativas = new Chart(ctxTrat, {
-        type: "pie",
-        data: {
-          labels: ordemTrat,
-          datasets: [{
-            data: ordemTrat.map(k => trat[k] || 0),
-            backgroundColor: ["#2563eb", "#ef4444", "#f59e0b", "#10b981"]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-
-      const mensal = contarPorMes(dados);
-      const ctxMensal = document.getElementById("graficoMensal").getContext("2d");
-
-      if (graficoMensal) graficoMensal.destroy();
-
-      graficoMensal = new Chart(ctxMensal, {
-        type: "line",
-        data: {
-          labels: mensal.map(x => x[0]),
-          datasets: [{
-            label: "Ocorrências",
-            data: mensal.map(x => x[1]),
-            borderColor: "#1d4ed8",
-            backgroundColor: "rgba(29, 78, 216, 0.15)",
-            tension: 0.25,
-            fill: false,
-            pointRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 }
-            }
+          const texto = await resp.text();
+          if (!texto || !texto.trim()) {
+            erros.push(`${arquivo}: arquivo vazio`);
+            continue;
           }
+
+          document.getElementById("csvFonte").textContent = `Arquivo em uso: ${arquivo}`;
+          return { arquivo, texto };
+        } catch (e) {
+          erros.push(`${arquivo}: ${e.message}`);
         }
-      });
-    }
+      }
 
-    function atualizarRanking(dados) {
-      renderRanking("rankingProdutos", topN(somarValores(dados, "produto", "qtd"), 20));
-      renderRanking("rankingClientes", topN(contarValores(dados, "cliente"), 20));
-      renderRanking("rankingReps", topN(contarValores(dados, "rep"), 20));
-    }
-
-    function atualizarDashboardCompleto(dados) {
-      atualizarMetricas(dados);
-      renderLista("topProdutos", topN(somarValores(dados, "produto", "qtd"), 5));
-      renderLista("topClientes", topN(contarValores(dados, "cliente"), 5));
-      renderLista("topReps", topN(contarValores(dados, "rep"), 5));
-      atualizarGraficos(dados);
-      atualizarRanking(dados);
-    }
-
-    function obterDadosFiltrados() {
-  let dados = [...dadosOriginais];
-
-  const dataInicio = document.getElementById("dataInicio").value;
-  const dataFim = document.getElementById("dataFim").value;
-  const mes = document.getElementById("mesFiltro").value;
-  const ano = document.getElementById("anoFiltro").value;
-  const uf = document.getElementById("ufFiltro").value;
-  const rep = document.getElementById("repFiltro").value;
-
-  if (dataInicio) {
-    const dtIni = new Date(dataInicio + "T00:00:00");
-    dados = dados.filter(d => {
-      const dt = parseDataBr(campo(d, "data"));
-      return dt && dt >= dtIni;
-    });
-  }
-
-  if (dataFim) {
-    const dtFim = new Date(dataFim + "T23:59:59");
-    dados = dados.filter(d => {
-      const dt = parseDataBr(campo(d, "data"));
-      return dt && dt <= dtFim;
-    });
-  }
-
-  if (mes) {
-    dados = dados.filter(d => {
-      const dt = parseDataBr(campo(d, "data"));
-      if (!dt) return false;
-      return String(dt.getMonth() + 1).padStart(2, "0") === mes;
-    });
-  }
-
-  if (ano) {
-    dados = dados.filter(d => {
-      const dt = parseDataBr(campo(d, "data"));
-      if (!dt) return false;
-      return String(dt.getFullYear()) === ano;
-    });
-  }
-
-  if (uf) {
-    dados = dados.filter(d => normalizarTexto(campo(d, "uf")) === uf);
-  }
-
-  if (rep) {
-    dados = dados.filter(d => normalizarTexto(campo(d, "rep")) === rep);
-  }
-
-  return dados;
-}
-    function aplicarFiltros() {
-      const dadosFiltrados = obterDadosFiltrados();
-      atualizarDashboardCompleto(dadosFiltrados);
-    }
-
-   limparFiltros()
-
-    function trocarAba(aba) {
-      document.getElementById("tabDashboard").classList.toggle("active", aba === "dashboard");
-      document.getElementById("tabRanking").classList.toggle("active", aba === "ranking");
-      document.getElementById("viewDashboard").classList.toggle("hidden", aba !== "dashboard");
-      document.getElementById("viewRanking").classList.toggle("hidden", aba !== "ranking");
+      throw new Error(
+        "Nenhum arquivo CSV pôde ser carregado.\n" +
+        erros.join("\n") +
+        "\n\nSugestão: deixe o CSV na mesma pasta do index.html."
+      );
     }
 
     async function carregarCSV() {
+      limparErro();
+      mostrarStatus("Carregando CSV...");
+      configurarLogo();
+
       try {
-        limparErro();
-        configurarLogo();
-
-        const resposta = await fetch(arquivoCSV + "?v=" + new Date().getTime());
-        if (!resposta.ok) {
-          throw new Error("Não foi possível carregar o CSV.");
-        }
-
-        const buffer = await resposta.arrayBuffer();
-
-        let texto;
-        try {
-          texto = new TextDecoder("windows-1252").decode(buffer);
-        } catch (e) {
-          texto = new TextDecoder("utf-8").decode(buffer);
-        }
+        const { arquivo, texto } = await tentarCarregarTextoCSV();
 
         const resultado = Papa.parse(texto, {
           header: true,
           delimiter: ";",
-          skipEmptyLines: true
+          skipEmptyLines: true,
+          transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
         });
 
+        if (resultado.errors && resultado.errors.length) {
+          console.warn("PapaParse warnings:", resultado.errors);
+        }
+
         if (!resultado.data || !resultado.data.length) {
-          mostrarErro("O CSV foi carregado, mas veio vazio.");
-          return;
+          throw new Error("O CSV foi carregado, mas não contém linhas válidas.");
         }
 
         detectarColunas(resultado.meta.fields || []);
 
-        if (!COLUNAS.data || !COLUNAS.uf || !COLUNAS.rep || !COLUNAS.cliente || !COLUNAS.produto || !COLUNAS.tratativa || !COLUNAS.qtd) {
-          mostrarErro(
-            "Não consegui identificar todas as colunas do CSV.\n" +
-            "Detectado:\n" +
-            JSON.stringify(COLUNAS, null, 2)
+        const colunasObrigatorias = ["data", "uf", "rep", "cliente", "produto", "tratativa", "qtd"];
+        const faltantes = colunasObrigatorias.filter(c => !COLUNAS[c]);
+
+        if (faltantes.length) {
+          throw new Error(
+            "Não consegui identificar todas as colunas obrigatórias.\n" +
+            "Faltando: " + faltantes.join(", ") + "\n" +
+            "Detectado: " + JSON.stringify(COLUNAS, null, 2)
           );
-          return;
         }
 
-        const dados = resultado.data.filter(linha =>
-          normalizarTexto(campo(linha, "cliente")) ||
-          normalizarTexto(campo(linha, "produto")) ||
-          normalizarTexto(campo(linha, "uf"))
-        );
+        dadosOriginais = resultado.data.filter(linha => {
+          return (
+            textoOriginal(campo(linha, "cliente")) ||
+            textoOriginal(campo(linha, "produto")) ||
+            textoOriginal(campo(linha, "uf")) ||
+            textoOriginal(campo(linha, "rep"))
+          );
+        });
 
-        if (!dados.length) {
-          mostrarErro("Nenhum registro válido foi encontrado no CSV.");
-          return;
+        if (!dadosOriginais.length) {
+          throw new Error("O CSV foi lido, mas nenhum registro útil foi encontrado.");
         }
 
-        dadosOriginais = dados;
         preencherFiltros(dadosOriginais);
         atualizarDashboardCompleto(dadosOriginais);
+
+        mostrarStatus(
+          `CSV carregado com sucesso: ${arquivo}\n` +
+          `Registros válidos: ${formatarNumero(dadosOriginais.length)}`
+        );
       } catch (erro) {
-        mostrarErro("Erro ao carregar o CSV: " + erro.message);
+        console.error(erro);
+        mostrarErro("Erro ao carregar o CSV:\n" + erro.message);
+        mostrarStatus("Falha no carregamento.");
+        zerarDashboard();
       }
     }
 
-    document.getElementById("btnAplicar").addEventListener("click", aplicarFiltros);
-    document.getElementById("btnLimpar").addEventListener("click", limparFiltros);
-    document.getElementById("tabDashboard").addEventListener("click", () => trocarAba("dashboard"));
-    document.getElementById("tabRanking").addEventListener("click", () => trocarAba("ranking"));
+    function preencherFiltros(dados) {
+      const anos = new Set();
+      const ufs = new Set();
+      const reps = new Set();
 
-    carregarCSV();
+      dados.forEach(linha => {
+        const data = parseData(campo(linha, "data"));
+        const uf = textoOriginal(campo(linha, "uf"));
+        const rep = textoOriginal(campo(linha, "rep"));
+
+        if (data) anos.add(data.getFullYear());
+        if (uf) ufs.add(uf);
+        if (rep) reps.add(rep);
+      });
+
+      preencherSelect("anoFiltro", [...anos].sort((a, b) => a - b), "Todos");
+      preencherSelect("ufFiltro", [...ufs].sort((a, b) => a.localeCompare(b, "pt-BR")), "Todos");
+      preencherSelect("repFiltro", [...reps].sort((a, b) => a.localeCompare(b, "pt-BR")), "Todos");
+    }
+
+    function preencherSelect(id, valores, textoPadrao) {
+      const select = document.getElementById(id);
+      const valorAtual = select.value;
+
+      select.innerHTML = `<option value="">${textoPadrao}</option>`;
+      valores.forEach(valor => {
+        const opt = document.createElement("option");
+        opt.value = valor;
+        opt.textContent = valor;
+        select.appendChild(opt);
+      });
+
+      if ([...select.options].some(opt => String(opt.value) === String(valorAtual))) {
+        select.value = valorAtual;
+      }
+    }
+
+    function obterDadosFiltrados() {
+      const dataInicio = document.getElementById("dataInicio").value;
+      const dataFim = document.getElementById("dataFim").value;
+      const mesFiltro = document.getElementById("mesFiltro").value;
+      const anoFiltro = document.getElementById("anoFiltro").value;
+      const ufFiltro = document.getElementById("ufFiltro").value;
+      const repFiltro = document.getElementById("repFiltro").value;
+
+      return dadosOriginais.filter(linha => {
+        const data = parseData(campo(linha, "data"));
+        const uf = textoOriginal(campo(linha, "uf"));
+        const rep = textoOriginal(campo(linha, "rep"));
+
+        if (dataInicio && data) {
+          const di = new Date(dataInicio + "T00:00:00");
+          if (data < di) return false;
+        }
+
+        if (dataFim && data) {
+          const df = new Date(dataFim + "T23:59:59");
+          if (data > df) return false;
+        }
+
+        if (mesFiltro && data) {
+          if ((data.getMonth() + 1) !== Number(mesFiltro)) return false;
+        }
+
+        if (anoFiltro && data) {
+          if (data.getFullYear() !== Number(anoFiltro)) return false;
+        }
+
+        if (ufFiltro && uf !== ufFiltro) return false;
+        if (repFiltro && rep !== repFiltro) return false;
+
+        return true;
+      });
+    }
+
+    function aplicarFiltros() {
+      const dadosFiltrados = obterDadosFiltrados();
+      atualizarDashboardCompleto(dadosFiltrados);
+      mostrarStatus(`Filtro aplicado. Registros exibidos: ${formatarNumero(dadosFiltrados.length)}`);
+    }
+
+    function limparFiltros() {
+      document.getElementById("dataInicio").value = "";
+      document.getElementById("dataFim").value = "";
+      document.getElementById("mesFiltro").value = "";
+      document.getElementById("anoFiltro").value = "";
+      document.getElementById("ufFiltro").value = "";
+      document.getElementById("repFiltro").value = "";
+
+      if (dadosOriginais.length) {
+        atualizarDashboardCompleto(dadosOriginais);
+        mostrarStatus(`Filtros limpos. Registros exibidos: ${formatarNumero(dadosOriginais.length)}`);
+      }
+    }
+
+    function contarPor(lista, extrairChave) {
+      const mapa = new Map();
+
+      lista.forEach(item => {
+        const chave = textoOriginal(extrairChave(item));
+        if (!chave) return;
+        mapa.set(chave, (mapa.get(chave) || 0) + 1);
+      });
+
+      return [...mapa.entries()]
+        .map(([nome, total]) => ({ nome, total }))
+        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+    }
+
+    function atualizarMetricas(dados) {
+      const tratativas = dados.map(l => textoOriginal(campo(l, "tratativa")));
+      const clientes = new Set(dados.map(l => textoOriginal(campo(l, "cliente"))).filter(Boolean));
+      const produtos = new Set(dados.map(l => textoOriginal(campo(l, "produto"))).filter(Boolean));
+
+      const abatimento = tratativas.filter(t => normalizarTexto(t).includes("ABATIMENTO")).length;
+      const bonificacao = tratativas.filter(t => normalizarTexto(t).includes("BONIFIC")).length;
+      const devolucao = tratativas.filter(t => normalizarTexto(t).includes("DEVOLU")).length;
+      const semRetorno = tratativas.filter(t => {
+        const n = normalizarTexto(t);
+        return !n || n.includes("SEM RETORNO");
+      }).length;
+
+      document.getElementById("mOcorrencias").textContent = formatarNumero(dados.length);
+      document.getElementById("mClientes").textContent = formatarNumero(clientes.size);
+      document.getElementById("mProdutos").textContent = formatarNumero(produtos.size);
+      document.getElementById("mAbatimento").textContent = formatarNumero(abatimento);
+      document.getElementById("mBonificacao").textContent = formatarNumero(bonificacao);
+      document.getElementById("mDevolucao").textContent = formatarNumero(devolucao);
+      document.getElementById("mSemRetorno").textContent = formatarNumero(semRetorno);
+    }
+
+    function destruirGrafico(nome) {
+      if (graficos[nome]) {
+        graficos[nome].destroy();
+        graficos[nome] = null;
+      }
+    }
+
+    function renderBarChart(canvasId, nomeGrafico, labels, valores, labelDataset, horizontal = true) {
+      destruirGrafico(nomeGrafico);
+
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      graficos[nomeGrafico] = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: labelDataset,
+            data: valores,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: horizontal ? "y" : "x",
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { precision: 0 } },
+            y: { ticks: { autoSkip: false } }
+          }
+        }
+      });
+    }
+
+    function renderPieChart(canvasId, nomeGrafico, labels, valores) {
+      destruirGrafico(nomeGrafico);
+
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      graficos[nomeGrafico] = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [{
+            data: valores,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom"
+            }
+          }
+        }
+      });
+    }
+
+    function renderLineChart(canvasId, nomeGrafico, labels, valores) {
+      destruirGrafico(nomeGrafico);
+
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      graficos[nomeGrafico] = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Ocorrências",
+            data: valores,
+            tension: 0.25,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarGraficos(dados) {
+      const topProdutos = contarPor(dados, l => campo(l, "produto")).slice(0, 5);
+      const topUF = contarPor(dados, l => campo(l, "uf")).slice(0, 5);
+      const tratativas = contarPor(dados, l => campo(l, "tratativa"));
+
+      const mensalMap = new Map();
+      dados.forEach(linha => {
+        const data = parseData(campo(linha, "data"));
+        if (!data) return;
+        const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+        mensalMap.set(chave, (mensalMap.get(chave) || 0) + 1);
+      });
+
+      const mensalOrdenado = [...mensalMap.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([chave, total]) => {
+          const [ano, mes] = chave.split("-");
+          const data = new Date(Number(ano), Number(mes) - 1, 1);
+          return { label: formatarMesAno(data), total };
+        });
+
+      renderBarChart(
+        "chartProdutos",
+        "chartProdutos",
+        topProdutos.map(x => x.nome),
+        topProdutos.map(x => x.total),
+        "Ocorrências"
+      );
+
+      renderBarChart(
+        "chartUF",
+        "chartUF",
+        topUF.map(x => x.nome),
+        topUF.map(x => x.total),
+        "Ocorrências"
+      );
+
+      renderPieChart(
+        "chartTratativas",
+        "chartTratativas",
+        tratativas.map(x => x.nome || "Sem retorno"),
+        tratativas.map(x => x.total)
+      );
+
+      renderLineChart(
+        "chartMensal",
+        "chartMensal",
+        mensalOrdenado.map(x => x.label),
+        mensalOrdenado.map(x => x.total)
+      );
+    }
+
+    function renderTabela(containerId, linhas, tituloColuna) {
+      const el = document.getElementById(containerId);
+
+      if (!linhas.length) {
+        el.innerHTML = `<div class="empty">Nenhum dado para exibir.</div>`;
+        return;
+      }
+
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>${tituloColuna}</th>
+              <th>Ocorrências</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhas.map((item, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>${escapeHtml(item.nome)}</td>
+                <td>${formatarNumero(item.total)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+
+      el.innerHTML = html;
+    }
+
+    function escapeHtml(texto) {
+      return String(texto ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function atualizarTabelas(dados) {
+      renderTabela("tabelaProdutos", contarPor(dados, l => campo(l, "produto")).slice(0, 20), "Produto");
+      renderTabela("tabelaClientes", contarPor(dados, l => campo(l, "cliente")).slice(0, 20), "Cliente");
+      renderTabela("tabelaReps", contarPor(dados, l => campo(l, "rep")).slice(0, 20), "REP");
+    }
+
+    function atualizarDashboardCompleto(dados) {
+      atualizarMetricas(dados);
+      atualizarGraficos(dados);
+      atualizarTabelas(dados);
+    }
+
+    function zerarDashboard() {
+      atualizarMetricas([]);
+      atualizarGraficos([]);
+      atualizarTabelas([]);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      limparErro();
+      mostrarStatus("Inicializando dashboard...");
+      carregarCSV();
+    });
   </script>
 </body>
 </html>
