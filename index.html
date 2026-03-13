@@ -492,9 +492,9 @@
   <script>
     const CANDIDATOS_CSV = [
       "./Base-Ocorrencias.csv",
-      "./Base-Ocorrencias.csv",
-      "./base-Ocorrencias.csv",
-      "./base-Ocorrencias.csv"
+      "./Base-Ocorrências.csv",
+      "./base-ocorrencias.csv",
+      "./base-ocorrências.csv"
     ];
 
     const COLUNAS = {
@@ -601,12 +601,12 @@
         return null;
       }
 
-      COLUNAS.data = encontrar(["DATA", "DT", "DATA OCORRENCIA", "DATA_OCORRENCIA"]);
+      COLUNAS.data = encontrar(["DATA", "DT", "DATA OCORRENCIA", "DATA_OCORRÊNCIA", "DATA_OCORRENCIA"]);
       COLUNAS.uf = encontrar(["UF", "ESTADO"]);
-      COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO"]);
-      COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL"]);
-      COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "ITEM"]);
-      COLUNAS.tratativa = encontrar(["TRATATIVA", "TRATATIVA", "TRATATIVA FINAL", "STATUS"]);
+      COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO", "REPRESENTAÇÃO"]);
+      COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL", "RAZÃO SOCIAL"]);
+      COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "DESCRIÇÃO PRODUTO", "ITEM"]);
+      COLUNAS.tratativa = encontrar(["TRATATIVA", "TRATATIVA FINAL", "STATUS"]);
       COLUNAS.qtd = encontrar(["QTD", "QUANTIDADE", "QTDE"]);
 
       return COLUNAS;
@@ -821,6 +821,37 @@
         .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
     }
 
+    function somarPorQtd(lista, extrairChave) {
+      const mapa = new Map();
+
+      lista.forEach(item => {
+        const chave = textoOriginal(extrairChave(item));
+        const qtd = numeroSeguro(campo(item, "qtd"));
+
+        if (!chave) return;
+        mapa.set(chave, (mapa.get(chave) || 0) + qtd);
+      });
+
+      return [...mapa.entries()]
+        .map(([nome, total]) => ({ nome, total }))
+        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+    }
+
+    function somarTratativas(lista) {
+      const mapa = new Map();
+
+      lista.forEach(item => {
+        const bruto = textoOriginal(campo(item, "tratativa"));
+        const qtd = numeroSeguro(campo(item, "qtd"));
+        const tratativa = bruto || "Sem retorno";
+        mapa.set(tratativa, (mapa.get(tratativa) || 0) + qtd);
+      });
+
+      return [...mapa.entries()]
+        .map(([nome, total]) => ({ nome, total }))
+        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+    }
+
     function atualizarMetricas(dados) {
       const tratativas = dados.map(l => textoOriginal(campo(l, "tratativa")));
       const clientes = new Set(dados.map(l => textoOriginal(campo(l, "cliente"))).filter(Boolean));
@@ -913,7 +944,7 @@
         data: {
           labels,
           datasets: [{
-            label: "Ocorrências",
+            label: "Quantidade",
             data: valores,
             tension: 0.25,
             fill: false
@@ -936,16 +967,17 @@
     }
 
     function atualizarGraficos(dados) {
-      const topProdutos = contarPor(dados, l => campo(l, "produto")).slice(0, 5);
-      const topUF = contarPor(dados, l => campo(l, "uf")).slice(0, 5);
-      const tratativas = contarPor(dados, l => campo(l, "tratativa"));
+      const topProdutos = somarPorQtd(dados, l => campo(l, "produto")).slice(0, 5);
+      const topUF = somarPorQtd(dados, l => campo(l, "uf")).slice(0, 5);
+      const tratativas = somarTratativas(dados);
 
       const mensalMap = new Map();
       dados.forEach(linha => {
         const data = parseData(campo(linha, "data"));
+        const qtd = numeroSeguro(campo(linha, "qtd"));
         if (!data) return;
         const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
-        mensalMap.set(chave, (mensalMap.get(chave) || 0) + 1);
+        mensalMap.set(chave, (mensalMap.get(chave) || 0) + qtd);
       });
 
       const mensalOrdenado = [...mensalMap.entries()]
@@ -961,7 +993,7 @@
         "chartProdutos",
         topProdutos.map(x => x.nome),
         topProdutos.map(x => x.total),
-        "Ocorrências"
+        "Quantidade"
       );
 
       renderBarChart(
@@ -969,13 +1001,13 @@
         "chartUF",
         topUF.map(x => x.nome),
         topUF.map(x => x.total),
-        "Ocorrências"
+        "Quantidade"
       );
 
       renderPieChart(
         "chartTratativas",
         "chartTratativas",
-        tratativas.map(x => x.nome || "Sem retorno"),
+        tratativas.map(x => x.nome),
         tratativas.map(x => x.total)
       );
 
@@ -1001,7 +1033,7 @@
             <tr>
               <th>#</th>
               <th>${tituloColuna}</th>
-              <th>Ocorrências</th>
+              <th>Quantidade</th>
             </tr>
           </thead>
           <tbody>
@@ -1029,9 +1061,9 @@
     }
 
     function atualizarTabelas(dados) {
-      renderTabela("tabelaProdutos", contarPor(dados, l => campo(l, "produto")).slice(0, 20), "Produto");
-      renderTabela("tabelaClientes", contarPor(dados, l => campo(l, "cliente")).slice(0, 20), "Cliente");
-      renderTabela("tabelaReps", contarPor(dados, l => campo(l, "rep")).slice(0, 20), "REP");
+      renderTabela("tabelaProdutos", somarPorQtd(dados, l => campo(l, "produto")).slice(0, 20), "Produto");
+      renderTabela("tabelaClientes", somarPorQtd(dados, l => campo(l, "cliente")).slice(0, 20), "Cliente");
+      renderTabela("tabelaReps", somarPorQtd(dados, l => campo(l, "rep")).slice(0, 20), "REP");
     }
 
     function atualizarDashboardCompleto(dados) {
