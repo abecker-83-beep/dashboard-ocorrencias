@@ -560,7 +560,7 @@
         mapa[normalizarCabecalho(campo)] = campo;
       });
 
-      COLUNAS.data = mapa["DATA"] || mapa["DT"] || mapa["DATA DA OCORRENCIA"] || mapa["DATA OCORRENCIA"] || null;
+      COLUNAS.data = mapa["DATA"] || mapa["DADOS"] || mapa["DT"] || mapa["DATA OCORRENCIA"] || null;
       COLUNAS.uf = mapa["UF"] || mapa["ESTADO"] || null;
       COLUNAS.rep = mapa["REP"] || mapa["REPRESENTANTE"] || null;
       COLUNAS.cliente = mapa["CLIENTE"] || mapa["RAZAO SOCIAL"] || null;
