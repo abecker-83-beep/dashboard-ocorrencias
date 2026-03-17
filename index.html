@@ -334,12 +334,12 @@
         <img id="logoImg" class="logo" src="./logo.jpg" alt="Logo" />
         <div class="title-wrap">
           <h1>Dashboard de Ocorrências</h1>
-          <p>Métricas, rankings e gráficos carregados automaticamente do CSV</p>
+          <p>Métricas, rankings e gráficos carregados automaticamente do Google Sheets</p>
         </div>
       </div>
 
       <div class="header-right">
-        <div><strong>Fonte:</strong> arquivo CSV do repositório</div>
+        <div><strong>Fonte:</strong> Google Sheets (atualização automática)</div>
         <div id="csvFonte">Aguardando carregamento...</div>
       </div>
     </header>
@@ -402,7 +402,7 @@
       <div class="actions">
         <button class="btn-primary" onclick="aplicarFiltros()">Aplicar filtros</button>
         <button class="btn-secondary" onclick="limparFiltros()">Limpar filtros</button>
-        <button class="btn-secondary" onclick="carregarCSV()">Recarregar CSV</button>
+        <button class="btn-secondary" onclick="carregarCSV()">Recarregar dados</button>
       </div>
 
       <div id="status" class="status"></div>
@@ -491,10 +491,7 @@
 
   <script>
     const CANDIDATOS_CSV = [
-      "./Base-Ocorrencias.csv",
-      "./Base-Ocorrências.csv",
-      "./base-ocorrencias.csv",
-      "./base-ocorrências.csv"
+      "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/export?format=csv"
     ];
 
     const COLUNAS = {
@@ -622,7 +619,7 @@
 
       for (const arquivo of CANDIDATOS_CSV) {
         try {
-          const resp = await fetch(`${arquivo}?v=${Date.now()}`, { cache: "no-store" });
+          const resp = await fetch(`${arquivo}&t=${Date.now()}`, { cache: "no-store" });
           if (!resp.ok) {
             erros.push(`${arquivo}: HTTP ${resp.status}`);
             continue;
@@ -634,7 +631,7 @@
             continue;
           }
 
-          document.getElementById("csvFonte").textContent = `Arquivo em uso: ${arquivo}`;
+          document.getElementById("csvFonte").textContent = "Google Sheets conectado";
           return { arquivo, texto };
         } catch (e) {
           erros.push(`${arquivo}: ${e.message}`);
@@ -642,15 +639,15 @@
       }
 
       throw new Error(
-        "Nenhum arquivo CSV pôde ser carregado.\n" +
+        "Nenhuma fonte de dados pôde ser carregada.\n" +
         erros.join("\n") +
-        "\n\nSugestão: deixe o CSV na mesma pasta do index.html."
+        "\n\nVerifique se a planilha está compartilhada como pública para leitura."
       );
     }
 
     async function carregarCSV() {
       limparErro();
-      mostrarStatus("Carregando CSV...");
+      mostrarStatus("Carregando dados do Google Sheets...");
       configurarLogo();
 
       try {
@@ -658,7 +655,7 @@
 
         const resultado = Papa.parse(texto, {
           header: true,
-          delimiter: ";",
+          delimiter: ",",
           skipEmptyLines: true,
           transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
         });
@@ -668,7 +665,7 @@
         }
 
         if (!resultado.data || !resultado.data.length) {
-          throw new Error("O CSV foi carregado, mas não contém linhas válidas.");
+          throw new Error("A planilha foi carregada, mas não contém linhas válidas.");
         }
 
         detectarColunas(resultado.meta.fields || []);
@@ -694,19 +691,19 @@
         });
 
         if (!dadosOriginais.length) {
-          throw new Error("O CSV foi lido, mas nenhum registro útil foi encontrado.");
+          throw new Error("A planilha foi lida, mas nenhum registro útil foi encontrado.");
         }
 
         preencherFiltros(dadosOriginais);
         atualizarDashboardCompleto(dadosOriginais);
 
         mostrarStatus(
-          `CSV carregado com sucesso: ${arquivo}\n` +
+          `Dados carregados com sucesso do Google Sheets\n` +
           `Registros válidos: ${formatarNumero(dadosOriginais.length)}`
         );
       } catch (erro) {
         console.error(erro);
-        mostrarErro("Erro ao carregar o CSV:\n" + erro.message);
+        mostrarErro("Erro ao carregar os dados:\n" + erro.message);
         mostrarStatus("Falha no carregamento.");
         zerarDashboard();
       }
