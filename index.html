@@ -631,10 +631,16 @@
       return texto;
     }
 
-    async function carregarCSV() {
-      limparErro();
-      mostrarStatus("Carregando dados do Google Sheets...");
-      configurarLogo();
+    async function carregarCSV(atualizacaoAutomatica = false) {
+     limparErro();
+
+if (atualizacaoAutomatica) {
+  mostrarStatus("Atualizando dados automaticamente...");
+} else {
+  mostrarStatus("Carregando dados do Google Sheets...");
+}
+
+configurarLogo();
 
       try {
         const texto = await carregarTextoDaPlanilha();
@@ -682,10 +688,16 @@
         preencherFiltros(dadosOriginais);
         atualizarDashboardCompleto(dadosOriginais);
 
-        mostrarStatus(
-          `Dados carregados com sucesso do Google Sheets\n` +
-          `Registros válidos: ${formatarNumero(dadosOriginais.length)}`
-        );
+       const agora = new Date().toLocaleString("pt-BR");
+
+document.getElementById("csvFonte").textContent =
+  `Última atualização: ${agora}`;
+
+mostrarStatus(
+  `Dados carregados com sucesso da aba BASE\n` +
+  `Registros válidos: ${formatarNumero(dadosOriginais.length)}\n` +
+  `Última atualização: ${agora}`
+);
       } catch (erro) {
         console.error(erro);
         mostrarErro("Erro ao carregar os dados:\n" + erro.message);
@@ -1054,11 +1066,12 @@
       atualizarTabelas([]);
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      limparErro();
-      mostrarStatus("Inicializando dashboard...");
-      carregarCSV();
-    });
-  </script>
-</body>
-</html>
+   document.addEventListener("DOMContentLoaded", () => {
+  limparErro();
+  mostrarStatus("Inicializando dashboard...");
+  carregarCSV();
+
+  setInterval(() => {
+    carregarCSV(true);
+  }, 300000); // 5 minutos
+});
