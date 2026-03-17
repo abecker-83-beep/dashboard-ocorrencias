@@ -495,7 +495,7 @@
   </div>
 
   <script>
-    const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/export?format=csv&gid=0";
+  const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/gviz/tq?tqx=out:csv&gid=0";
 
     const COLUNAS = {
       data: null,
@@ -617,8 +617,9 @@
       return coluna ? linha[coluna] : "";
     }
 
-    async function carregarTextoDaPlanilha() {
-      const resp = await fetch(`${URL_CSV}&t=${Date.now()}`, { cache: "no-store" });
+       async function carregarTextoDaPlanilha() {
+      const separador = URL_CSV.includes("?") ? "&" : "?";
+      const resp = await fetch(`${URL_CSV}${separador}t=${Date.now()}`, { cache: "no-store" });
       if (!resp.ok) {
         throw new Error(`Não foi possível acessar a planilha (${resp.status}).`);
       }
