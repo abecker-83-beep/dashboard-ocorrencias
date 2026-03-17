@@ -495,7 +495,7 @@
   </div>
 
   <script>
-  const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/gviz/tq?tqx=out:csv&sheet=BASE";
+    const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/gviz/tq?tqx=out:csv&sheet=BASE";
 
     const COLUNAS = {
       data: null,
@@ -617,7 +617,7 @@
       return coluna ? linha[coluna] : "";
     }
 
-       async function carregarTextoDaPlanilha() {
+    async function carregarTextoDaPlanilha() {
       const separador = URL_CSV.includes("?") ? "&" : "?";
       const resp = await fetch(`${URL_CSV}${separador}t=${Date.now()}`, { cache: "no-store" });
       if (!resp.ok) {
@@ -627,20 +627,19 @@
       if (!texto || !texto.trim()) {
         throw new Error("A planilha retornou vazia.");
       }
-      document.getElementById("csvFonte").textContent = "Google Sheets conectado";
       return texto;
     }
 
     async function carregarCSV(atualizacaoAutomatica = false) {
-     limparErro();
+      limparErro();
 
-if (atualizacaoAutomatica) {
-  mostrarStatus("Atualizando dados automaticamente...");
-} else {
-  mostrarStatus("Carregando dados do Google Sheets...");
-}
+      if (atualizacaoAutomatica) {
+        mostrarStatus("Atualizando dados automaticamente...");
+      } else {
+        mostrarStatus("Carregando dados do Google Sheets...");
+      }
 
-configurarLogo();
+      configurarLogo();
 
       try {
         const texto = await carregarTextoDaPlanilha();
@@ -688,16 +687,16 @@ configurarLogo();
         preencherFiltros(dadosOriginais);
         atualizarDashboardCompleto(dadosOriginais);
 
-       const agora = new Date().toLocaleString("pt-BR");
+        const agora = new Date().toLocaleString("pt-BR");
 
-document.getElementById("csvFonte").textContent =
-  `Última atualização: ${agora}`;
+        document.getElementById("csvFonte").textContent =
+          `Última atualização: ${agora}`;
 
-mostrarStatus(
-  `Dados carregados com sucesso da aba BASE\n` +
-  `Registros válidos: ${formatarNumero(dadosOriginais.length)}\n` +
-  `Última atualização: ${agora}`
-);
+        mostrarStatus(
+          `Dados carregados com sucesso da aba BASE\n` +
+          `Registros válidos: ${formatarNumero(dadosOriginais.length)}\n` +
+          `Última atualização: ${agora}`
+        );
       } catch (erro) {
         console.error(erro);
         mostrarErro("Erro ao carregar os dados:\n" + erro.message);
@@ -1066,12 +1065,15 @@ mostrarStatus(
       atualizarTabelas([]);
     }
 
-   document.addEventListener("DOMContentLoaded", () => {
-  limparErro();
-  mostrarStatus("Inicializando dashboard...");
-  carregarCSV();
+    document.addEventListener("DOMContentLoaded", () => {
+      limparErro();
+      mostrarStatus("Inicializando dashboard...");
+      carregarCSV();
 
-  setInterval(() => {
-    carregarCSV(true);
-  }, 300000); // 5 minutos
-});
+      setInterval(() => {
+        carregarCSV(true);
+      }, 300000); // 5 minutos
+    });
+  </script>
+</body>
+</html>
