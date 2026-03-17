@@ -295,6 +295,7 @@
       .metrics-grid {
         grid-template-columns: repeat(3, minmax(140px, 1fr));
       }
+
       .tables-grid {
         grid-template-columns: 1fr;
       }
@@ -305,9 +306,11 @@
       .grid-2 {
         grid-template-columns: 1fr;
       }
+
       .header {
         align-items: flex-start;
       }
+
       .header-right {
         text-align: left;
       }
@@ -317,9 +320,11 @@
       .metrics-grid {
         grid-template-columns: 1fr 1fr;
       }
+
       .title-wrap h1 {
         font-size: 22px;
       }
+
       .logo {
         width: 56px;
         height: 56px;
@@ -331,7 +336,7 @@
   <div class="container">
     <header class="header">
       <div class="header-left">
-        <img id="logoImg" class="logo" src="./logo.jpg" alt="Logo" />
+        <img id="logoImg" class="logo" src="./logo.jpg" alt="Logotipo" />
         <div class="title-wrap">
           <h1>Dashboard de Ocorrências</h1>
           <p>Métricas, rankings e gráficos carregados automaticamente do Google Sheets</p>
@@ -490,9 +495,7 @@
   </div>
 
   <script>
-    const CANDIDATOS_CSV = [
-      "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/export?format=csv"
-    ];
+    const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/export?format=csv&gid=0";
 
     const COLUNAS = {
       data: null,
@@ -598,7 +601,7 @@
         return null;
       }
 
-      COLUNAS.data = encontrar(["DATA", "DT", "DATA OCORRENCIA", "DATA_OCORRÊNCIA", "DATA_OCORRENCIA"]);
+      COLUNAS.data = encontrar(["DATA", "DT"]);
       COLUNAS.uf = encontrar(["UF", "ESTADO"]);
       COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO", "REPRESENTAÇÃO"]);
       COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL", "RAZÃO SOCIAL"]);
@@ -614,35 +617,17 @@
       return coluna ? linha[coluna] : "";
     }
 
-    async function tentarCarregarTextoCSV() {
-      const erros = [];
-
-      for (const arquivo of CANDIDATOS_CSV) {
-        try {
-          const resp = await fetch(`${arquivo}&t=${Date.now()}`, { cache: "no-store" });
-          if (!resp.ok) {
-            erros.push(`${arquivo}: HTTP ${resp.status}`);
-            continue;
-          }
-
-          const texto = await resp.text();
-          if (!texto || !texto.trim()) {
-            erros.push(`${arquivo}: arquivo vazio`);
-            continue;
-          }
-
-          document.getElementById("csvFonte").textContent = "Google Sheets conectado";
-          return { arquivo, texto };
-        } catch (e) {
-          erros.push(`${arquivo}: ${e.message}`);
-        }
+    async function carregarTextoDaPlanilha() {
+      const resp = await fetch(`${URL_CSV}&t=${Date.now()}`, { cache: "no-store" });
+      if (!resp.ok) {
+        throw new Error(`Não foi possível acessar a planilha (${resp.status}).`);
       }
-
-      throw new Error(
-        "Nenhuma fonte de dados pôde ser carregada.\n" +
-        erros.join("\n") +
-        "\n\nVerifique se a planilha está compartilhada como pública para leitura."
-      );
+      const texto = await resp.text();
+      if (!texto || !texto.trim()) {
+        throw new Error("A planilha retornou vazia.");
+      }
+      document.getElementById("csvFonte").textContent = "Google Sheets conectado";
+      return texto;
     }
 
     async function carregarCSV() {
@@ -651,23 +636,23 @@
       configurarLogo();
 
       try {
-        const { arquivo, texto } = await tentarCarregarTextoCSV();
+        const texto = await carregarTextoDaPlanilha();
 
-     const resultado = Papa.parse(texto, {
-  header: true,
-  skipEmptyLines: true,
-  transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
-});
+        const resultado = Papa.parse(texto, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
+        });
 
         if (resultado.errors && resultado.errors.length) {
           console.warn("PapaParse warnings:", resultado.errors);
         }
 
-        if (!resultado.data || !resultado.data.length) {
-          throw new Error("A planilha foi carregada, mas não contém linhas válidas.");
+        if (!resultado.meta.fields || !resultado.meta.fields.length) {
+          throw new Error("Não encontrei cabeçalhos na planilha.");
         }
 
-        detectarColunas(resultado.meta.fields || []);
+        detectarColunas(resultado.meta.fields);
 
         const colunasObrigatorias = ["data", "uf", "rep", "cliente", "produto", "tratativa", "qtd"];
         const faltantes = colunasObrigatorias.filter(c => !COLUNAS[c]);
@@ -676,7 +661,7 @@
           throw new Error(
             "Não consegui identificar todas as colunas obrigatórias.\n" +
             "Faltando: " + faltantes.join(", ") + "\n" +
-            "Detectado: " + JSON.stringify(COLUNAS, null, 2)
+            "Cabeçalhos encontrados: " + resultado.meta.fields.join(" | ")
           );
         }
 
@@ -803,27 +788,12 @@
       }
     }
 
-    function contarPor(lista, extrairChave) {
-      const mapa = new Map();
-
-      lista.forEach(item => {
-        const chave = textoOriginal(extrairChave(item));
-        if (!chave) return;
-        mapa.set(chave, (mapa.get(chave) || 0) + 1);
-      });
-
-      return [...mapa.entries()]
-        .map(([nome, total]) => ({ nome, total }))
-        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
-    }
-
     function somarPorQtd(lista, extrairChave) {
       const mapa = new Map();
 
       lista.forEach(item => {
         const chave = textoOriginal(extrairChave(item));
         const qtd = numeroSeguro(campo(item, "qtd"));
-
         if (!chave) return;
         mapa.set(chave, (mapa.get(chave) || 0) + qtd);
       });
@@ -880,7 +850,10 @@
     function renderBarChart(canvasId, nomeGrafico, labels, valores, labelDataset, horizontal = true) {
       destruirGrafico(nomeGrafico);
 
-      const ctx = document.getElementById(canvasId).getContext("2d");
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
       graficos[nomeGrafico] = new Chart(ctx, {
         type: "bar",
         data: {
@@ -909,7 +882,10 @@
     function renderPieChart(canvasId, nomeGrafico, labels, valores) {
       destruirGrafico(nomeGrafico);
 
-      const ctx = document.getElementById(canvasId).getContext("2d");
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
       graficos[nomeGrafico] = new Chart(ctx, {
         type: "doughnut",
         data: {
@@ -934,7 +910,10 @@
     function renderLineChart(canvasId, nomeGrafico, labels, valores) {
       destruirGrafico(nomeGrafico);
 
-      const ctx = document.getElementById(canvasId).getContext("2d");
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
       graficos[nomeGrafico] = new Chart(ctx, {
         type: "line",
         data: {
