@@ -815,20 +815,37 @@
         .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
     }
 
-    function somarTratativas(lista) {
-      const mapa = new Map();
+   function contarTratativas(lista) {
+  const contador = {
+    "ABATIMENTO": 0,
+    "DEVOLUÇÃO": 0,
+    "BONIFICAÇÃO": 0,
+    "SEM RETORNO": 0
+  };
 
-      lista.forEach(item => {
-        const bruto = textoOriginal(campo(item, "tratativa"));
-        const qtd = numeroSeguro(campo(item, "qtd"));
-        const tratativa = bruto || "Sem retorno";
-        mapa.set(tratativa, (mapa.get(tratativa) || 0) + qtd);
-      });
+  lista.forEach(item => {
+    const tratativa = normalizarTexto(campo(item, "tratativa"));
 
-      return [...mapa.entries()]
-        .map(([nome, total]) => ({ nome, total }))
-        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+    if (!tratativa || tratativa === "SEM RETORNO") {
+      contador["SEM RETORNO"]++;
+    } else if (tratativa.includes("ABATIMENTO")) {
+      contador["ABATIMENTO"]++;
+    } else if (tratativa.includes("DEVOLU")) {
+      contador["DEVOLUÇÃO"]++;
+    } else if (tratativa.includes("BONIFIC")) {
+      contador["BONIFICAÇÃO"]++;
+    } else {
+      contador["SEM RETORNO"]++;
     }
+  });
+
+  return [
+    { nome: "ABATIMENTO", total: contador["ABATIMENTO"] },
+    { nome: "DEVOLUÇÃO", total: contador["DEVOLUÇÃO"] },
+    { nome: "BONIFICAÇÃO", total: contador["BONIFICAÇÃO"] },
+    { nome: "SEM RETORNO", total: contador["SEM RETORNO"] }
+  ];
+}
 
     function atualizarMetricas(dados) {
       const tratativas = dados.map(l => textoOriginal(campo(l, "tratativa")));
@@ -892,32 +909,44 @@
     }
 
     function renderPieChart(canvasId, nomeGrafico, labels, valores) {
-      destruirGrafico(nomeGrafico);
+  destruirGrafico(nomeGrafico);
 
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
 
-      const ctx = canvas.getContext("2d");
-      graficos[nomeGrafico] = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels,
-          datasets: [{
-            data: valores,
-            borderWidth: 1
-          }]
+  const ctx = canvas.getContext("2d");
+  graficos[nomeGrafico] = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data: valores,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "52%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            boxWidth: 18,
+            padding: 14
+          }
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom"
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.label}: ${formatarNumero(context.raw)}`;
             }
           }
         }
-      });
+      }
     }
+  });
+}
 
     function renderLineChart(canvasId, nomeGrafico, labels, valores) {
       destruirGrafico(nomeGrafico);
@@ -956,7 +985,7 @@
     function atualizarGraficos(dados) {
       const topProdutos = somarPorQtd(dados, l => campo(l, "produto")).slice(0, 5);
       const topUF = somarPorQtd(dados, l => campo(l, "uf")).slice(0, 5);
-      const tratativas = somarTratativas(dados);
+      const tratativas = contarTratativas(dados);
 
       const mensalMap = new Map();
       dados.forEach(linha => {
