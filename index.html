@@ -653,12 +653,11 @@
       try {
         const { arquivo, texto } = await tentarCarregarTextoCSV();
 
-        const resultado = Papa.parse(texto, {
-          header: true,
-          delimiter: ",",
-          skipEmptyLines: true,
-          transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
-        });
+     const resultado = Papa.parse(texto, {
+  header: true,
+  skipEmptyLines: true,
+  transformHeader: (header) => header.replace(/\uFEFF/g, "").trim()
+});
 
         if (resultado.errors && resultado.errors.length) {
           console.warn("PapaParse warnings:", resultado.errors);
