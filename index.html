@@ -458,9 +458,10 @@
     </div>
 
     <div class="metric-card">
-      <div class="label">SEM RETORNO</div>
-      <div class="value" id="mSemRetorno">0</div>
-    </div>
+  <div class="label">SEM RETORNO</div>
+  <div class="value" id="mSemRetorno">0</div>
+  <div class="value-money" id="vSemRetorno">R$ 0,00</div>
+</div>
   </div>
 </section>
 
@@ -919,6 +920,16 @@ function somarValor(lista, filtroTratativa = null) {
   const valorAbatimento = somarValor(dados, "ABATIMENTO");
   const valorBonificacao = somarValor(dados, "BONIFIC");
   const valorDevolucao = somarValor(dados, "DEVOLU");
+  const valorSemRetorno = dados.reduce((total, item) => {
+  const tratativa = normalizarTexto(campo(item, "tratativa"));
+  const valor = numeroSeguro(campo(item, "valor"));
+
+  if (!tratativa || tratativa === "SEM RETORNO") {
+    return total + valor;
+  }
+
+  return total;
+}, 0);
 
   document.getElementById("mOcorrencias").textContent = formatarNumero(dados.length);
   document.getElementById("mClientes").textContent = formatarNumero(clientes.size);
@@ -926,6 +937,7 @@ function somarValor(lista, filtroTratativa = null) {
   document.getElementById("mAbatimento").textContent = formatarNumero(abatimento);
   document.getElementById("mBonificacao").textContent = formatarNumero(bonificacao);
   document.getElementById("mDevolucao").textContent = formatarNumero(devolucao);
+  document.getElementById("vSemRetorno").textContent = formatarMoeda(valorSemRetorno);
   document.getElementById("mSemRetorno").textContent = formatarNumero(semRetorno);
 
   // 💰 INSERIR VALORES NO HTML
