@@ -1091,58 +1091,59 @@ function contarPor(lista, extrairChave) {
       });
     }
 
-    function atualizarGraficos(dados) {
-      const topProdutos = somarPorQtd(dados, l => campo(l, "produto")).slice(0, 5);
-      const topSupervisores = contarPor(dados, l => campo(l, "supervisor")).slice(0, 5);
-      const tratativas = contarTratativas(dados);
+   function atualizarGraficos(dados) {
+  const topProdutos = somarPorQtd(dados, l => campo(l, "produto")).slice(0, 5);
+  const topSupervisores = contarPor(dados, l => campo(l, "supervisor")).slice(0, 5);
+  const tratativas = contarTratativas(dados);
 
-      const mensalMap = new Map();
-      dados.forEach(linha => {
-        const data = parseData(campo(linha, "data"));
-        const qtd = numeroSeguro(campo(linha, "qtd"));
-        if (!data) return;
-        const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
-        mensalMap.set(chave, (mensalMap.get(chave) || 0) + qtd);
-      });
+  const mensalMap = new Map();
+  dados.forEach(linha => {
+    const data = parseData(campo(linha, "data"));
+    const qtd = numeroSeguro(campo(linha, "qtd"));
+    if (!data) return;
 
-      const mensalOrdenado = [...mensalMap.entries()]
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([chave, total]) => {
-          const [ano, mes] = chave.split("-");
-          const data = new Date(Number(ano), Number(mes) - 1, 1);
-          return { label: formatarMesAno(data), total };
-        });
+    const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+    mensalMap.set(chave, (mensalMap.get(chave) || 0) + qtd);
+  });
 
-      renderBarChart(
-  "chartUF",
-  "chartUF",
-  topSupervisores.map(x => x.nome),
-  topSupervisores.map(x => x.total),
-  "Ocorrências"
-);
+  const mensalOrdenado = [...mensalMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([chave, total]) => {
+      const [ano, mes] = chave.split("-");
+      const data = new Date(Number(ano), Number(mes) - 1, 1);
+      return { label: formatarMesAno(data), total };
+    });
 
-     renderBarChart(
-  "chartUF",
-  "chartUF",
-  topSupervisores.map(x => x.nome),
-  topSupervisores.map(x => x.total),
-  "Ocorrências"
-);
+  renderBarChart(
+    "chartProdutos",
+    "chartProdutos",
+    topProdutos.map(x => x.nome),
+    topProdutos.map(x => x.total),
+    "Unidades"
+  );
 
-      renderPieChart(
-        "chartTratativas",
-        "chartTratativas",
-        tratativas.map(x => x.nome),
-        tratativas.map(x => x.total)
-      );
+  renderBarChart(
+    "chartUF",
+    "chartUF",
+    topSupervisores.map(x => x.nome),
+    topSupervisores.map(x => x.total),
+    "Ocorrências"
+  );
 
-      renderLineChart(
-        "chartMensal",
-        "chartMensal",
-        mensalOrdenado.map(x => x.label),
-        mensalOrdenado.map(x => x.total)
-      );
-    }
+  renderPieChart(
+    "chartTratativas",
+    "chartTratativas",
+    tratativas.map(x => x.nome),
+    tratativas.map(x => x.total)
+  );
+
+  renderLineChart(
+    "chartMensal",
+    "chartMensal",
+    mensalOrdenado.map(x => x.label),
+    mensalOrdenado.map(x => x.total)
+  );
+}
 
     function renderTabela(containerId, linhas, tituloColuna) {
       const el = document.getElementById(containerId);
