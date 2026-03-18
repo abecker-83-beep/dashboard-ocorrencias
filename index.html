@@ -215,6 +215,12 @@
       font-weight: bold;
     }
 
+.value-money {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
     .metric-card.green .value { color: var(--ok); }
     .metric-card.orange .value { color: var(--warn); }
     .metric-card.red .value { color: var(--danger); }
@@ -437,10 +443,11 @@
           <div class="label">Bonificação</div>
           <div class="value" id="mBonificacao">0</div>
         </div>
-        <div class="metric-card red">
-          <div class="label">Devolução</div>
-          <div class="value" id="mDevolucao">0</div>
-        </div>
+      <div class="metric-card blue">
+  <div class="label">OCORRÊNCIAS</div>
+  <div class="value" id="mOcorrencias">0</div>
+  <div class="value-money" id="vOcorrencias">R$ 0,00</div>
+</div>
         <div class="metric-card">
           <div class="label">Sem Retorno</div>
           <div class="value" id="mSemRetorno">0</div>
@@ -497,15 +504,16 @@
   <script>
     const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/gviz/tq?tqx=out:csv&sheet=BASE";
 
-    const COLUNAS = {
-      data: null,
-      uf: null,
-      rep: null,
-      cliente: null,
-      produto: null,
-      tratativa: null,
-      qtd: null
-    };
+   const COLUNAS = {
+  data: null,
+  uf: null,
+  rep: null,
+  cliente: null,
+  produto: null,
+  tratativa: null,
+  qtd: null,
+  valor: null
+};
 
     let dadosOriginais = [];
     let graficos = {};
@@ -530,10 +538,46 @@
       return Number.isFinite(n) ? n : 0;
     }
 
+function somarValor(lista, filtroTratativa = null) {
+  return lista.reduce((total, item) => {
+    const tratativa = normalizarTexto(campo(item, "tratativa"));
+    const valor = numeroSeguro(campo(item, "valor"));
+
+    if (!filtroTratativa) return total + valor;
+
+    if (tratativa.includes(filtroTratativa)) {
+      return total + valor;
+    }
+
+    return total;
+  }, 0);
+}
+
     function formatarNumero(valor) {
       return new Intl.NumberFormat("pt-BR").format(valor || 0);
     }
 
+function formatarMoeda(valor) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  }).format(valor || 0);
+}
+
+function somarValor(lista, filtroTratativa = null) {
+  return lista.reduce((total, item) => {
+    const tratativa = normalizarTexto(campo(item, "tratativa"));
+    const valor = numeroSeguro(campo(item, "valor"));
+
+    if (!filtroTratativa) return total + valor;
+
+    if (tratativa.includes(filtroTratativa)) {
+      return total + valor;
+    }
+
+    return total;
+  }, 0);
+}
     function formatarMesAno(date) {
       const meses = [
         "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
@@ -603,6 +647,7 @@
 
       COLUNAS.data = encontrar(["DATA", "DT"]);
       COLUNAS.uf = encontrar(["UF", "ESTADO"]);
+      COLUNAS.valor = encontrar(["VALOR", "R$ UN VND", "TOTAL"]);
       COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO", "REPRESENTAÇÃO"]);
       COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL", "RAZÃO SOCIAL"]);
       COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "DESCRIÇÃO PRODUTO", "ITEM"]);
@@ -848,26 +893,38 @@
 }
 
     function atualizarMetricas(dados) {
-      const tratativas = dados.map(l => textoOriginal(campo(l, "tratativa")));
-      const clientes = new Set(dados.map(l => textoOriginal(campo(l, "cliente"))).filter(Boolean));
-      const produtos = new Set(dados.map(l => textoOriginal(campo(l, "produto"))).filter(Boolean));
+  const tratativas = dados.map(l => textoOriginal(campo(l, "tratativa")));
+  const clientes = new Set(dados.map(l => textoOriginal(campo(l, "cliente"))).filter(Boolean));
+  const produtos = new Set(dados.map(l => textoOriginal(campo(l, "produto"))).filter(Boolean));
 
-      const abatimento = tratativas.filter(t => normalizarTexto(t).includes("ABATIMENTO")).length;
-      const bonificacao = tratativas.filter(t => normalizarTexto(t).includes("BONIFIC")).length;
-      const devolucao = tratativas.filter(t => normalizarTexto(t).includes("DEVOLU")).length;
-      const semRetorno = tratativas.filter(t => {
-        const n = normalizarTexto(t);
-        return !n || n.includes("SEM RETORNO");
-      }).length;
+  const abatimento = tratativas.filter(t => normalizarTexto(t).includes("ABATIMENTO")).length;
+  const bonificacao = tratativas.filter(t => normalizarTexto(t).includes("BONIFIC")).length;
+  const devolucao = tratativas.filter(t => normalizarTexto(t).includes("DEVOLU")).length;
+  const semRetorno = tratativas.filter(t => {
+    const n = normalizarTexto(t);
+    return !n || n.includes("SEM RETORNO");
+  }).length;
 
-      document.getElementById("mOcorrencias").textContent = formatarNumero(dados.length);
-      document.getElementById("mClientes").textContent = formatarNumero(clientes.size);
-      document.getElementById("mProdutos").textContent = formatarNumero(produtos.size);
-      document.getElementById("mAbatimento").textContent = formatarNumero(abatimento);
-      document.getElementById("mBonificacao").textContent = formatarNumero(bonificacao);
-      document.getElementById("mDevolucao").textContent = formatarNumero(devolucao);
-      document.getElementById("mSemRetorno").textContent = formatarNumero(semRetorno);
-    }
+  // 💰 VALORES
+  const valorTotal = somarValor(dados);
+  const valorAbatimento = somarValor(dados, "ABATIMENTO");
+  const valorBonificacao = somarValor(dados, "BONIFIC");
+  const valorDevolucao = somarValor(dados, "DEVOLU");
+
+  document.getElementById("mOcorrencias").textContent = formatarNumero(dados.length);
+  document.getElementById("mClientes").textContent = formatarNumero(clientes.size);
+  document.getElementById("mProdutos").textContent = formatarNumero(produtos.size);
+  document.getElementById("mAbatimento").textContent = formatarNumero(abatimento);
+  document.getElementById("mBonificacao").textContent = formatarNumero(bonificacao);
+  document.getElementById("mDevolucao").textContent = formatarNumero(devolucao);
+  document.getElementById("mSemRetorno").textContent = formatarNumero(semRetorno);
+
+  // 💰 INSERIR VALORES NO HTML
+  document.getElementById("vOcorrencias").textContent = formatarMoeda(valorTotal);
+  document.getElementById("vAbatimento").textContent = formatarMoeda(valorAbatimento);
+  document.getElementById("vBonificacao").textContent = formatarMoeda(valorBonificacao);
+  document.getElementById("vDevolucao").textContent = formatarMoeda(valorDevolucao);
+}
 
     function destruirGrafico(nome) {
       if (graficos[nome]) {
@@ -1044,14 +1101,14 @@
       }
 
       const html = `
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>${tituloColuna}</th>
-              <th>Quantidade</th>
-            </tr>
-          </thead>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>${tituloColuna}</th>
+        <th>Unidades</th>
+      </tr>
+    </thead>
           <tbody>
             ${linhas.map((item, idx) => `
               <tr>
