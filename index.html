@@ -472,7 +472,7 @@
       </div>
 
       <div class="chart-box">
-        <h3>Top 5 Regiões (UF)</h3>
+       <h3>Ranking Supervisores</h3>
         <div class="canvas-wrap"><canvas id="chartUF"></canvas></div>
       </div>
     </section>
@@ -514,7 +514,7 @@
   <script>
     const URL_CSV = "https://docs.google.com/spreadsheets/d/1Ao6fNE74WeWhz700Tvm3EdUsErSfzOLxYUm_aDtetJY/gviz/tq?tqx=out:csv&sheet=BASE";
 
-   const COLUNAS = {
+  const COLUNAS = {
   data: null,
   uf: null,
   rep: null,
@@ -522,7 +522,8 @@
   produto: null,
   tratativa: null,
   qtd: null,
-  valor: null
+  valor: null,
+  supervisor: null
 };
 
     let dadosOriginais = [];
@@ -659,6 +660,7 @@ function somarValor(lista, filtroTratativa = null) {
       COLUNAS.uf = encontrar(["UF", "ESTADO"]);
       COLUNAS.valor = encontrar(["VALOR", "R$ UN VND", "TOTAL"]);
       COLUNAS.rep = encontrar(["REP", "REPRESENTANTE", "REPRESENTACAO", "REPRESENTAÇÃO"]);
+      COLUNAS.supervisor = encontrar(["SUPERVISOR"]);
       COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL", "RAZÃO SOCIAL"]);
       COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "DESCRIÇÃO PRODUTO", "ITEM"]);
       COLUNAS.tratativa = encontrar(["TRATATIVA", "TRATATIVA FINAL", "STATUS"]);
@@ -870,6 +872,35 @@ function somarValor(lista, filtroTratativa = null) {
         .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
     }
 
+function somarPorQtd(lista, extrairChave) {
+  const mapa = new Map();
+
+  lista.forEach(item => {
+    const chave = textoOriginal(extrairChave(item));
+    const qtd = numeroSeguro(campo(item, "qtd"));
+    if (!chave) return;
+    mapa.set(chave, (mapa.get(chave) || 0) + qtd);
+  });
+
+  return [...mapa.entries()]
+    .map(([nome, total]) => ({ nome, total }))
+    .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
+function contarPor(lista, extrairChave) {
+  const mapa = new Map();
+
+  lista.forEach(item => {
+    const chave = textoOriginal(extrairChave(item));
+    if (!chave) return;
+    mapa.set(chave, (mapa.get(chave) || 0) + 1);
+  });
+
+  return [...mapa.entries()]
+    .map(([nome, total]) => ({ nome, total }))
+    .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
    function contarTratativas(lista) {
   const contador = {
     "ABATIMENTO": 0,
@@ -1062,7 +1093,7 @@ function somarValor(lista, filtroTratativa = null) {
 
     function atualizarGraficos(dados) {
       const topProdutos = somarPorQtd(dados, l => campo(l, "produto")).slice(0, 5);
-      const topUF = somarPorQtd(dados, l => campo(l, "uf")).slice(0, 5);
+      const topSupervisores = contarPor(dados, l => campo(l, "supervisor")).slice(0, 5);
       const tratativas = contarTratativas(dados);
 
       const mensalMap = new Map();
@@ -1083,12 +1114,12 @@ function somarValor(lista, filtroTratativa = null) {
         });
 
       renderBarChart(
-        "chartProdutos",
-        "chartProdutos",
-        topProdutos.map(x => x.nome),
-        topProdutos.map(x => x.total),
-        "Quantidade"
-      );
+  "chartUF",
+  "chartUF",
+  topSupervisores.map(x => x.nome),
+  topSupervisores.map(x => x.total),
+  "Ocorrências"
+);
 
       renderBarChart(
         "chartUF",
