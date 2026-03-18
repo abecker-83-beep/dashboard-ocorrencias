@@ -420,40 +420,49 @@
       <div id="erro" class="error"></div>
     </section>
 
-    <section class="panel">
-      <h2>Métricas Gerais</h2>
-      <div class="metrics-grid">
-        <div class="metric-card blue">
-          <div class="label">Ocorrências</div>
-          <div class="value" id="mOcorrencias">0</div>
-        </div>
-        <div class="metric-card blue">
-          <div class="label">Clientes Únicos</div>
-          <div class="value" id="mClientes">0</div>
-        </div>
-        <div class="metric-card blue">
-          <div class="label">Produtos Únicos</div>
-          <div class="value" id="mProdutos">0</div>
-        </div>
-        <div class="metric-card orange">
-          <div class="label">Abatimento</div>
-          <div class="value" id="mAbatimento">0</div>
-        </div>
-        <div class="metric-card green">
-          <div class="label">Bonificação</div>
-          <div class="value" id="mBonificacao">0</div>
-        </div>
-      <div class="metric-card blue">
-  <div class="label">OCORRÊNCIAS</div>
-  <div class="value" id="mOcorrencias">0</div>
-  <div class="value-money" id="vOcorrencias">R$ 0,00</div>
-</div>
-        <div class="metric-card">
-          <div class="label">Sem Retorno</div>
-          <div class="value" id="mSemRetorno">0</div>
-        </div>
-      </div>
-    </section>
+   <section class="panel">
+  <h2>Métricas Gerais</h2>
+  <div class="metrics-grid">
+    <div class="metric-card blue">
+      <div class="label">OCORRÊNCIAS</div>
+      <div class="value" id="mOcorrencias">0</div>
+      <div class="value-money" id="vOcorrencias">R$ 0,00</div>
+    </div>
+
+    <div class="metric-card blue">
+      <div class="label">CLIENTES ÚNICOS</div>
+      <div class="value" id="mClientes">0</div>
+    </div>
+
+    <div class="metric-card blue">
+      <div class="label">PRODUTOS ÚNICOS</div>
+      <div class="value" id="mProdutos">0</div>
+    </div>
+
+    <div class="metric-card orange">
+      <div class="label">ABATIMENTO</div>
+      <div class="value" id="mAbatimento">0</div>
+      <div class="value-money" id="vAbatimento">R$ 0,00</div>
+    </div>
+
+    <div class="metric-card green">
+      <div class="label">BONIFICAÇÃO</div>
+      <div class="value" id="mBonificacao">0</div>
+      <div class="value-money" id="vBonificacao">R$ 0,00</div>
+    </div>
+
+    <div class="metric-card red">
+      <div class="label">DEVOLUÇÃO</div>
+      <div class="value" id="mDevolucao">0</div>
+      <div class="value-money" id="vDevolucao">R$ 0,00</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="label">SEM RETORNO</div>
+      <div class="value" id="mSemRetorno">0</div>
+    </div>
+  </div>
+</section>
 
     <section class="grid-2">
       <div class="chart-box">
@@ -652,7 +661,7 @@ function somarValor(lista, filtroTratativa = null) {
       COLUNAS.cliente = encontrar(["CLIENTE", "RAZAO SOCIAL", "RAZÃO SOCIAL"]);
       COLUNAS.produto = encontrar(["PRODUTO", "DESCRICAO PRODUTO", "DESCRIÇÃO PRODUTO", "ITEM"]);
       COLUNAS.tratativa = encontrar(["TRATATIVA", "TRATATIVA FINAL", "STATUS"]);
-      COLUNAS.qtd = encontrar(["QTD", "QUANTIDADE", "QTDE"]);
+      COLUNAS.qtd = encontrar(["QTD", "QUANTIDADE", "QTDE", "UNIDADES"]);
 
       return COLUNAS;
     }
